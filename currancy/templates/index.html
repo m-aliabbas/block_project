@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %} 
+  <h1 class="text-center mb-3">
+
+    {% if block_chain %}
+     <h1> {{block_chain}} </h1>
+    {% else %}
+    <h1>No contaent</h1>
+    {% endif %}
+  </h1>
+{% endblock %}
