@@ -12,5 +12,9 @@ urlpatterns = [
     path('knownaddr/',views.knwonaddresses),
     path('transactions/',views.transactions),
     path('assetsInfo/',views.assetsInfo,name='assetinfo'),
-      path('assetTrans/',views.assetTransact)
+      path('assetTrans/',views.assetTransact),
+       path('buy/',views.buy_transaction),
+        path('sell/',views.sell_transaction),
+         path('prevent/',views.prevent_transaction)
+
 ]

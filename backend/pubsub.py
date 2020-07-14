@@ -33,8 +33,10 @@ class Listener(SubscribeCallback):
         print(f'\n Incoming Message : {message_object}')
         if message_object.channel==CHANNELS['BLOCK']:
             block=Block.from_json(message_object.message)
-            potential_chain=self.blockchain.chain[:-1]
-            potential_chain.append(block)
+            print('Block to mine ',block)
+            potential_chain=self.blockchain.chain
+            # potential_chain.append(block)
+            print(potential_chain)
             try:
                 self.blockchain.replace_chain(potential_chain)
                 self.transaction_pool.clear_blockchain_transactions(

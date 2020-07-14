@@ -1,7 +1,7 @@
 import uuid
 from backend.config import STARTING_BALANCE
 # STARTING_BALANCE=1000
-
+first_time=False
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives import hashes
@@ -65,17 +65,18 @@ class Assets:
         Calculate the ba;ance of given address considering transaction data within the blockchain.
 
         """
+        products=[]
         if address=="":
             id=0
         else:
             user=User.objects.get(username=address)
             id=user.id
-
-        try:
-            data = Products.objects.all().filter(ToBeSell=True,p_owner=id)
-            products=list(data.values_list('id', flat=True))
-        except Exception as e:
-            raise Exception(f'Some database issue {e}')
+        if address=='scoopy':
+            try:
+                data = Products.objects.all().filter(ToBeSell=True,p_owner=id)
+                products=list(data.values_list('id', flat=True))
+            except Exception as e:
+                raise Exception(f'Some database issue {e}')
         if not blockchain:
             return products
         try:
@@ -84,7 +85,7 @@ class Assets:
                     if transaction['input']['address']==address:
                         products=transaction['output'][address]
                     elif address in transaction['output']:
-                        products+=[transaction['output'][address]]
+                        products+=transaction['output'][address]
         except:
             pass
         return products

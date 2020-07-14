@@ -81,8 +81,8 @@ class AssetsTransaction:
     
         # if transaction.input['products'] != output_total:
         #     raise Exception('Invalid transaction output values')
-        print(transaction.input['products'])
-        print(transaction.output)
+        # print(transaction.input['products'])
+        # print(transaction.output)
         if not Assets.verify(
             transaction.input['public_key'],
             transaction.output,

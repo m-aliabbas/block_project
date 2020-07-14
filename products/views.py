@@ -23,7 +23,7 @@ def ProductsListView(request):
    return render(request,'products/products.html',context)
 def AssetsListView(request):
    user_id=request.user.id
-   data = Products.objects.all().filter(ToBeSell=True,p_owner=user_id)
+   data = Products.objects.all().filter(p_owner=user_id)
    context = {
       'product_data' : data,
    }

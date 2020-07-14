@@ -23,9 +23,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '=n=1hkj70v(mjp4+&y_np^d&e!07s2-8y(q&vu9dz)6suv_gps'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-
-ALLOWED_HOSTS = ['*']
+DEBUG = True
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -120,19 +119,14 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-SECURE_HSTS_SECONDS=10
-SECURE_HSTS_INCLUDE_SUBDOMAINS=True
-SESSION_COOKIE_SECURE =True
-SECURE_SSL_REDIRECT=True
-SESSION_COOKIE_SECUR=True
-CSRF_COOKIE_SECURE=True
-SECURE_HSTS_PRELOAD=True
+
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT=os.path.join(BASE_DIR,'static')
 # CORS_ORIGIN_ALLOW_ALL = True
 # CORS_ALLOW_METHODS = list(default_methods)
 CORS_ORIGIN_WHITELIST='http://localhost:3000',
@@ -142,6 +136,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 LOGIN_REDIRECT_URL = "products_home"
 LOGIN_URL = "login"
 
-MEDIA_ROOT = os.path.join(BASE_DIR,'media')
+
 MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 

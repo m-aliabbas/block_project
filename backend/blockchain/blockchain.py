@@ -28,8 +28,6 @@ class BlockChain:
 
         if len(chain) < len(self.chain):
             raise Exception('Cannot replace. The incoming chain must be longer.')
-        print(chain)
-        print(self.chain)
         try:
             BlockChain.is_valid_chain(chain)
         except Exception as e:

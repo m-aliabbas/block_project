@@ -1,7 +1,7 @@
 from django.shortcuts import render
 import time
 import json
-from django.http import JsonResponse
+from django.http import JsonResponse,HttpResponse
 from backend.blockchain.blockchain import BlockChain
 from backend.blockchain.block import Block
 from backend.pubsub import PubSub
@@ -14,8 +14,10 @@ from backend.products.assets import Assets
 from backend.products.assets_transact import AssetsTransaction
 from backend.products.assets_transpool import AssetsTransPool
 from products.models import Products
-
+from django.forms.models import model_to_dict
+from django.contrib.auth.models import User
 block=BlockChain()
+sender_assets=Assets(block)
 wallet=Wallet(block)
 assets=Assets(block)
 transaction_pool=TransactionPool()
@@ -27,6 +29,65 @@ def index(request):
     if assets.address!=request.user.username:
         assets.address=request.user.username
     return render(request,'index.html',{'Date':time.time()})
+@login_required
+def sell_transaction(request):
+    if assets.address!=request.user.username:
+        assets.address=request.user.username
+    productID=int(request.GET.get('abc',None))
+    if productID==None:
+        return JsonResponse({'Error':'Error 204'},safe=False)
+    Products.objects.filter(id=productID).update(ToBeSell=True)
+    return index(request)
+@login_required
+def prevent_transaction(request):
+    if assets.address!=request.user.username:
+        assets.address=request.user.username
+    productID=int(request.GET.get('abc',None))
+    if productID==None:
+        return JsonResponse({'Error':'Error 204'},safe=False)
+    Products.objects.filter(id=productID).update(ToBeSell=False)
+    return index(request)
+@login_required
+def buy_transaction(request):
+    if assets.address!=request.user.username:
+        assets.address=request.user.username
+    productID=int(request.GET.get('abc',None))
+
+    if productID==None:
+        return JsonResponse({'Error':'Error 204'},safe=False)
+    else:
+        data = Products.objects.all().filter(id=productID)
+        contex={}
+        # try:
+        p_id=list(data.values_list('id', flat=True))[0]
+        p_owner_old=list(data.values_list('p_owner', flat=True))[0]
+        user=User.objects.get(username=request.user.username)
+        us_id=user.id
+        sender_assets.address=User.objects.get(id=p_owner_old).username
+        assetTran=assetTranPool.existing_transaction(sender_assets.address)
+        if assetTran:
+            assetTran.update(sender_assets,request.user.username,p_id)
+        else:
+            assetTran=AssetsTransaction(sender_assets,request.user.username,p_id)
+            assetTranPool.set_transaction(assetTran)
+   
+        pubsub.broadcast_asset(assetTran)
+        resp=blockMine(request)
+        resp_data=json.loads(resp.content)
+        is_mine_err='Error' in resp_data.keys()
+        # return JsonResponse({'Done':'Error 204'},safe=False)
+        if is_mine_err:
+            return JsonResponse({'Error':'Error in Mining'},safe=False)
+        #     print('Mined')
+        #    
+        #     update=  Products.objects.filter(id=p_id).update(p_owner=us_id)
+        #     return JsonResponse(assetTran.to_json(),safe=False)
+        else:
+            contex={'id':p_id,'p_owner':p_owner_old,'p_owner_new':us_id,'sender_asset':User.objects.get(id=p_owner_old).username}
+            update=  Products.objects.filter(id=p_id).update(p_owner=us_id)
+            return JsonResponse({'Staus':'Mined'},safe=False)
+        
+
 @login_required
 def blockChainRange(request):
     if assets.address!=request.user.username:
@@ -62,20 +123,25 @@ def blockMine(request):
     if assets.address!=request.user.username:
         assets.address=request.user.username
     transaction_data=assetTranPool.transaction_data()
+    print(transaction_data)
     if len(transaction_data)<1:
-        return JsonResponse({'Error':'Nothing to Mine...'},safe=False)
+        contex={'Error':'Error'}
+        return JsonResponse(contex,safe=False)
 
     # transaction_data.append(Transaction.reward_transaction(wallet).to_json())
     # transaction_data=assetTranPool.transaction_data()
+    # print(transaction_data)
     block.addBlock(transaction_data)
     blck=block.chain[-1]
-    # print(blck.to_json())
-    print(transaction_data)
-    # blck=Block(transaction_data)
+        # print(blck.to_json())
+        # blck=Block(transaction_data)
     pubsub.broadcast_block(blck)
     assetTranPool.clear_blockchain_transactions(block)
-    #contex={'block_chain':block.chain[-1].to_json()}
-    return JsonResponse(blck.to_json(),safe=False)
+
+    contex={'block_chain':block.chain[-1].to_json()}
+    return JsonResponse(contex,safe=False)
+
+    
 @login_required
 def walletInfo(request):
     if assets.address!=request.user.username:
@@ -99,7 +165,7 @@ def knwonaddresses(request):
 def transactions(request):
     if assets.address!=request.user.username:
         assets.address=request.user.username
-    return JsonResponse(transaction_pool.transaction_data(),safe=False)
+    return JsonResponse(assetTranPool.transaction_data(),safe=False)
 @login_required
 @csrf_exempt
 def assetTransact(request):
